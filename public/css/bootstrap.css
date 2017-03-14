@@ -8,6 +8,26 @@
  * Designed and built with all the love in the world @twitter by @mdo and @fat.
  */
 
+@media (max-width: 979px) {
+    canvas {
+        width: 100% !important;
+        max-width: 800px;
+        height: auto !important;
+        // width: 500px !important;
+        // height: 300px !important;
+    }
+}
+
+.container {
+  width: 1024px;
+  padding: 2em;
+}
+
+.bold-blue {
+  font-weight: bold;
+  color: #0277BD;
+}
+
 article,
 aside,
 details,
@@ -22,12 +42,6 @@ section {
 }
 
 audio,
-canvas,
-video {
-  display: inline-block;
-  *display: inline;
-  *zoom: 1;
-}
 
 audio:not([controls]) {
   display: none;
@@ -4295,7 +4309,7 @@ input[type="submit"].btn.btn-mini {
 }
 
 .navbar-inner {
-  min-height: 40px;
+  min-height: 30px;
   padding-right: 20px;
   padding-left: 20px;
   background-color: #fafafa;
@@ -4303,7 +4317,7 @@ input[type="submit"].btn.btn-mini {
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#f2f2f2));
   background-image: -webkit-linear-gradient(top, #ffffff, #f2f2f2);
   background-image: -o-linear-gradient(top, #ffffff, #f2f2f2);
-  background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);
+  background-image: linear-gradient(to bottom, #000000, #332c2c);
   background-repeat: repeat-x;
   border: 1px solid #d4d4d4;
   -webkit-border-radius: 4px;
@@ -4534,9 +4548,9 @@ input[type="submit"].btn.btn-mini {
 .navbar .nav > li > a {
   float: none;
   padding: 10px 15px 10px;
-  color: #777777;
+  color: #ffffff;
   text-decoration: none;
-  text-shadow: 0 1px 0 #ffffff;
+  text-shadow: 0 1px 0 #312a2a;
 }
 
 .navbar .nav .dropdown-toggle .caret {
@@ -4545,7 +4559,7 @@ input[type="submit"].btn.btn-mini {
 
 .navbar .nav > li > a:focus,
 .navbar .nav > li > a:hover {
-  color: #333333;
+  color: #5bc0de;
   text-decoration: none;
   background-color: transparent;
 }

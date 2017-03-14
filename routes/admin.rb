@@ -191,8 +191,6 @@ get '/admin/config' do
     @config = config_options
     if config_options["cvss"]
         @scoring = "cvss"
-    elsif config_options["dread"]
-        @scoring = "dread"
     else
         @scoring = "default"
     end
@@ -532,4 +530,3 @@ get '/admin/admin_plugins' do
     }
     haml :enabled_plugins, :encode_html => true
 end
-

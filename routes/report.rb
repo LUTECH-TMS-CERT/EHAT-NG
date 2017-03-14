@@ -1,4 +1,6 @@
 require 'sinatra'
+require 'axlsx'
+require 'ots'
 
 #####
 # Reporting Routes
@@ -12,10 +14,217 @@ get '/reports/list' do
 
     @admin = true if is_administrator?
 
-	# allow the user to set their logo in the configuration options
-	@logo = config_options["logo"]
+    # allow the user to set their logo in the configuration options
+    @logo = config_options["logo"]
 
     haml :reports_list, :encode_html => true
+end
+
+# Calendar
+get '/report/calendar' do
+    @templates = Xslt.all
+    @calendar = config_options["calendar"]
+
+    reports = Reports.all()
+
+    # return reports owned by user
+    @data = []
+    i = 0
+    reports.each do |r|
+        report = get_report(r.id)
+        if report
+            @data[i] = report
+            i = i + 1
+        end
+    end
+
+    haml :calendar, :encode_html => true
+end
+
+# Statistics
+get '/report/stats' do
+    @templates = Xslt.all
+    @chart = config_options["chart"]
+
+    @stats = true
+
+    # debug - need to get finding id
+    #@all_findings = TemplateFindings.all(:order => [:title.asc]).to_json
+
+    reports = Reports.all()
+
+    # return reports owned by user
+    data = []
+    i = 0
+    reports.each do |r|
+        report = get_report(r.id)
+        if report
+            data[i] = report
+            i = i + 1
+        end
+    end
+
+    parsed_reports = JSON.parse(data.to_json)
+
+    # get id of all reports owned by user
+    ids = []
+    i = 0
+    parsed_reports.each do |r|
+        ids[i] = r["id"]
+        i += 1
+    end
+
+    @xss = 0
+    @path = 0
+    @dos = 0
+    @rce = 0
+    @xxe = 0
+    @sqli = 0
+
+    ids.each do |i|
+        findings = Findings.all(:report_id => i, :order => [:risk.desc])
+        parsed_findings = JSON.parse(findings.to_json)
+        parsed_findings.each do |f|     
+            if f["master_id"] == 2
+                @xss += 1
+            elsif f["master_id"] == 9
+                @path += 1
+            elsif f["master_id"] == 10
+                @dos += 1
+            elsif f["master_id"] == 22
+                @rce += 1
+            elsif f["master_id"] == 17
+                @xxe += 1
+            elsif f["master_id"] == 1
+                @sqli += 1
+            end
+        end
+    end
+
+    haml :stats, :encode_html => true
+end
+
+get '/report/stats_time' do
+    @templates = Xslt.all
+    @chart = config_options["chart"]
+
+    @stats = true
+
+    reports = Reports.all()
+
+    # return reports owned by user
+    data = []
+    i = 0
+    reports.each do |r|
+        report = get_report(r.id)
+        if report
+            data[i] = report
+            i = i + 1
+        end
+    end
+
+    date = []
+    @jan = 0
+    @feb = 0
+    @mar = 0
+    @apr = 0
+    @may = 0
+    @jun = 0
+    @jul = 0
+    @aug = 0
+    @sep = 0
+    @oct = 0
+    @nov = 0
+    @dec = 0
+
+    parsed_data = JSON.parse(data.to_json)
+    parsed_data.each do |s|
+        if s['date'].split("/")[0].to_s == "01"
+            @jan += 1
+        elsif s['date'].split("/")[0].to_s == "02"
+            @feb += 1
+        elsif s['date'].split("/")[0].to_s == "03"
+            @mar += 1
+        elsif s['date'].split("/")[0].to_s == "04"
+            @apr += 1
+        elsif s['date'].split("/")[0].to_s == "05"
+            @may += 1
+        elsif s['date'].split("/")[0].to_s == "06"
+            @jun += 1
+        elsif s['date'].split("/")[0].to_s == "07"
+            @jul += 1
+        elsif s['date'].split("/")[0].to_s == "08"
+            @aug += 1
+        elsif s['date'].split("/")[0].to_s == "09"
+            @sep += 1
+        elsif s['date'].split("/")[0].to_s == "10"
+            @oct += 1
+        elsif s['date'].split("/")[0].to_s == "11"
+            @nov += 1
+        elsif s['date'].split("/")[0].to_s == "12"
+            @dec += 1
+        end
+    end
+    #@count_report = i
+    @reportini = data.to_json
+    
+    haml :stats_time, :encode_html => true
+end
+
+get '/report/stats_cvss' do
+    @templates = Xslt.all
+    @chart = config_options["chart"]
+
+    @stats = true
+
+    reports = Reports.all()
+
+    # return reports owned by user
+    data = []
+    i = 0
+    reports.each do |r|
+        report = get_report(r.id)
+        if report
+            data[i] = report
+            i = i + 1
+        end
+    end
+
+    parsed_reports = JSON.parse(data.to_json)
+
+    # get id of all reports owned by user
+    ids = []
+    i = 0
+    parsed_reports.each do |r|
+        ids[i] = r["id"]
+        i += 1
+    end
+
+    @critical = 0
+    @high = 0
+    @medium = 0
+    @low = 0
+    @informational = 0
+
+    ids.each do |i|
+        findings = Findings.all(:report_id => i, :order => [:cvss_score.desc])
+        parsed_findings = JSON.parse(findings.to_json)
+        parsed_findings.each do |f|     
+            if f["cvss_severity"] == "Informational"
+                @informational += 1
+            elsif f["cvss_severity"] == "Low"
+                @low += 1
+            elsif f["cvss_severity"] == "Medium"
+                @medium += 1
+            elsif f["cvss_severity"] == "High"
+                @medium += 1
+            elsif f["cvss_severity"] == "Critical"
+                @critical += 1
+            end
+        end
+    end
+    
+    haml :stats_cvss, :encode_html => true
 end
 
 # Create a report
@@ -29,7 +238,7 @@ post '/report/new' do
     data = url_escape_hash(request.POST)
 
     data["owner"] = get_username
-    data["date"] = DateTime.now.strftime "%m/%d/%Y"
+    data["date"] = DateTime.now.strftime "%d/%m/%Y"
 
     @report = Reports.new(data)
     @report.save
@@ -109,17 +318,33 @@ get '/report/:id/import_nessus' do
     haml :import_nessus, :encode_html => true
 end
 
-# auto add serpico findings if mapped to nessus ids
+# upload nexpose xml files to be processed
+get '/report/:id/import_nexpose' do
+    id = params[:id]
+
+    @nexposemap = config_options["nexposemap"]
+
+    # Query for the first report matching the id
+    @report = get_report(id)
+
+    haml :import_nexpose, :encode_html => true
+end
+
+# auto add serpico findings if mapped to nessus 
 post '/report/:id/import_autoadd' do
     type = params[:type]
 
     xml = params[:file][:tempfile].read
+
     if (xml =~ /^<NessusClientData_v2>/ && type == "nessus")
         import_nessus = true
         vulns = parse_nessus_xml(xml, config_options["threshold"])
     elsif (xml =~ /^<issues burpVersion/ && type == "burp")
         import_burp = true
         vulns = parse_burp_xml(xml)
+    elsif (xml =~ /^<NexposeReport version="1.0">/  && type == "nexpose")
+        import_nexpose = true
+        vulns = parse_nexpose_xml(xml)
     else
         return "File does not contain valid XML import data"
     end
@@ -152,12 +377,13 @@ post '/report/:id/import_autoadd' do
     # host/ip is key, value is array of vuln ids
     vulns.keys.each do |i|
         vulns[i].each do |v|
-
-			# if serpico finding id maps to nessus/burp plugin id, add to report
+            # if serpico finding id maps to nessus/burp plugin id, add to report
             if import_nessus
                 @mappings = NessusMapping.all(:pluginid => v)
             elsif import_burp
                 @mappings = BurpMapping.all(:pluginid => v)
+            elsif import_nexpose
+                @mappings = NexposeMapping.all(:pluginid => v)
             end
             # add affected hosts for each finding
             if (@mappings)
@@ -252,34 +478,34 @@ post '/report/:id/upload_attachments' do
     end
 
     if params[:files] == nil
-    	redirect to("/report/#{id}/upload_attachments?no_file=1")
+        redirect to("/report/#{id}/upload_attachments?no_file=1")
     end
 
     params['files'].map{ |upf|
         # We use a random filename
         rand_file = "./attachments/#{rand(36**36).to_s(36)}"
 
-    	# reject if the file is above a certain limit
-    	if upf[:tempfile].size > 100000000
-    		return "File too large. 100MB limit"
-    	end
+        # reject if the file is above a certain limit
+        if upf[:tempfile].size > 100000000
+            return "File too large. 100MB limit"
+        end
 
-    	# open up a file handle and write the attachment
-    	File.open(rand_file, 'wb') {|f| f.write(upf[:tempfile].read) }
+        # open up a file handle and write the attachment
+        File.open(rand_file, 'wb') {|f| f.write(upf[:tempfile].read) }
 
-    	# delete the file data from the attachment
-    	datax = Hash.new
-    	# to prevent traversal we hardcode this
-    	datax["filename_location"] = "#{rand_file}"
-    	datax["filename"] = upf[:filename]
-    	datax["description"] = CGI::escapeHTML(upf[:filename]).gsub(" ","_").gsub("/","_").gsub("\\","_").gsub("`","_")
-    	datax["report_id"] = id
-    	data = url_escape_hash(datax)
+        # delete the file data from the attachment
+        datax = Hash.new
+        # to prevent traversal we hardcode this
+        datax["filename_location"] = "#{rand_file}"
+        datax["filename"] = upf[:filename]
+        datax["description"] = CGI::escapeHTML(upf[:filename]).gsub(" ","_").gsub("/","_").gsub("\\","_").gsub("`","_")
+        datax["report_id"] = id
+        data = url_escape_hash(datax)
 
-    	@attachment = Attachments.new(data)
-    	@attachment.save
+        @attachment = Attachments.new(data)
+        @attachment.save
     }
-	redirect to("/report/#{id}/attachments")
+    redirect to("/report/#{id}/attachments")
 end
 
 get '/report/:id/export_attachments' do
@@ -325,16 +551,16 @@ get '/report/:id/attachments/delete/:att_id' do
 
     @attachment = Attachments.first(:report_id => id, :id => params[:att_id])
 
-	if @attachment == nil
-		return "No Such Attachment"
-	end
+    if @attachment == nil
+        return "No Such Attachment"
+    end
 
     File.delete(@attachment.filename_location)
 
     # delete the entries
     @attachment.destroy
 
-	redirect to("/report/#{id}/attachments")
+    redirect to("/report/#{id}/attachments")
 end
 
 
@@ -365,7 +591,7 @@ get '/report/:id/edit' do
 
     # Query for the first report matching the report_name
     @report = get_report(id)
-	@templates = Xslt.all(:order => [:report_type.asc])
+    @templates = Xslt.all(:order => [:report_type.asc])
 
     if @report == nil
         return "No Such Report"
@@ -415,9 +641,9 @@ get '/report/:id/user_defined_variables' do
         end
 
         @user_variables.each do |k,v|
-			if v
-				@user_variables[k] = meta_markup(v)
-			end
+            if v
+                @user_variables[k] = meta_markup(v)
+            end
         end
     else
         @user_variables = config_options["user_defined_variables"]
@@ -430,44 +656,44 @@ end
 post '/report/:id/user_defined_variables' do
     data = url_escape_hash(request.POST)
 
-	variable_hash = Hash.new()
-	data.each do |k,v|
-		if k =~ /variable_name/
-			key = k.split("variable_name_").last.split("_").first
+    variable_hash = Hash.new()
+    data.each do |k,v|
+        if k =~ /variable_name/
+            key = k.split("variable_name_").last.split("_").first
 
-			# remove certain elements from name %&"<>
-			v = v.gsub("%","_").gsub("&quot;","'").gsub("&amp;","").gsub("&gt;","").gsub("&lt;","")
-			variable_hash["#{key}%#{v}"] = "DEFAULT"
+            # remove certain elements from name %&"<>
+            v = v.gsub("%","_").gsub("&quot;","'").gsub("&amp;","").gsub("&gt;","").gsub("&lt;","")
+            variable_hash["#{key}%#{v}"] = "DEFAULT"
 
-		end
-		if k =~ /variable_data/
-			key = k.split("variable_data_").last.split("_").first
+        end
+        if k =~ /variable_data/
+            key = k.split("variable_data_").last.split("_").first
 
-			variable_hash.each do |k1,v1|
-				if k1 =~ /%/
-					kk = k1.split("%")
-					if kk.first == key
-						variable_hash[k1] = v
-					end
-				end
-			end
-		end
-	end
+            variable_hash.each do |k1,v1|
+                if k1 =~ /%/
+                    kk = k1.split("%")
+                    if kk.first == key
+                        variable_hash[k1] = v
+                    end
+                end
+            end
+        end
+    end
 
-	# remove the % and any blank values
-	q = variable_hash.clone
-	variable_hash.each do |k,v|
-		if k =~ /%/
-			p k.split("%")
-			if k.split("%").size == 1
-				q.delete(k)
-			else
-				q[k.split("%").last] = v
-				q.delete(k)
-			end
-		end
-	end
-	variable_hash = q
+    # remove the % and any blank values
+    q = variable_hash.clone
+    variable_hash.each do |k,v|
+        if k =~ /%/
+            p k.split("%")
+            if k.split("%").size == 1
+                q.delete(k)
+            else
+                q[k.split("%").last] = v
+                q.delete(k)
+            end
+        end
+    end
+    variable_hash = q
 
     id = params[:id]
     @report = get_report(id)
@@ -493,10 +719,8 @@ get '/report/:id/findings' do
     end
 
     # Query for the findings that match the report_id
-    if(config_options["dread"])
-        @findings = Findings.all(:report_id => id, :order => [:dread_total.desc])
-    elsif(config_options["cvss"])
-        @findings = Findings.all(:report_id => id, :order => [:cvss_total.desc])
+    if(config_options["cvss"])
+        @findings = Findings.all(:report_id => id, :order => [:cvss_score.desc])
     else
         @findings = Findings.all(:report_id => id, :order => [:risk.desc])
     end
@@ -519,10 +743,8 @@ get '/report/:id/status' do
     end
 
     # Query for the findings that match the report_id
-    if(config_options["dread"])
-        @findings = Findings.all(:report_id => id, :order => [:dread_total.desc])
-    elsif(config_options["cvss"])
-        @findings = Findings.all(:report_id => id, :order => [:cvss_total.desc])
+    if(config_options["cvss"])
+        @findings = Findings.all(:report_id => id, :order => [:cvss_score.desc])
     else
         @findings = Findings.all(:report_id => id, :order => [:risk.desc])
     end
@@ -648,24 +870,25 @@ post '/report/:id/findings_add' do
 
     redirect to("/report/#{id}/findings") unless params[:finding]
 
-	params[:finding].each do |finding|
-		templated_finding = TemplateFindings.first(:id => finding.to_i)
+    params[:finding].each do |finding|
+        templated_finding = TemplateFindings.first(:id => finding.to_i)
 
-		templated_finding.id = nil
-		attr = templated_finding.attributes
-		attr.delete(:approved)
-		attr["master_id"] = finding.to_i
-		@newfinding = Findings.new(attr)
-		@newfinding.report_id = id
+        templated_finding.id = nil
+        attr = templated_finding.attributes
+        attr.delete(:approved)
+        attr["master_id"] = finding.to_i
+        @newfinding = Findings.new(attr)
+        @newfinding.report_id = id
 
         # because of multiple scores we need to make sure all are set
         # => leave it up to the user to make the calculation if they switch mid report
         @newfinding.dread_total = 0 if @newfinding.dread_total == nil
         @newfinding.cvss_total = 0  if @newfinding.cvss_total == nil
+        @newfinding.cvss_score = 0  if @newfinding.cvss_score == nil
         @newfinding.risk = 0 if @newfinding.risk == nil
 
-		@newfinding.save
-	end
+        @newfinding.save
+    end
 
     # if we have hosts add them to the findings too
     params[:finding].each do |number|
@@ -686,10 +909,9 @@ post '/report/:id/findings_add' do
         finding.save
     end
 
-    if(config_options["dread"])
-        @findings = Findings.all(:report_id => id, :order => [:dread_total.desc])
-    elsif(config_options["cvss"])
-        @findings = Findings.all(:report_id => id, :order => [:cvss_total.desc])
+    # Query for the findings that match the report_id
+    if(config_options["cvss"])
+        @findings = Findings.all(:report_id => id, :order => [:cvss_score.desc])
     else
         @findings = Findings.all(:report_id => id, :order => [:risk.desc])
     end
@@ -730,12 +952,6 @@ post '/report/:id/findings/new' do
     end
     data = url_escape_hash(request.POST)
 
-    if(config_options["dread"])
-        data["dread_total"] = data["damage"].to_i + data["reproducability"].to_i + data["exploitability"].to_i + data["affected_users"].to_i + data["discoverability"].to_i
-    elsif(config_options["cvss"])
-        data = cvss(data)
-    end
-
     id = params[:id]
 
     # Query for the first report matching the report_name
@@ -754,6 +970,7 @@ post '/report/:id/findings/new' do
     # => leave it up to the user to make the calculation if they switch mid report
     @finding.dread_total = 0 if @finding.dread_total == nil
     @finding.cvss_total = 0 if @finding.cvss_total == nil
+    @finding.cvss_score = 0 if @finding.cvss_score == nil
     @finding.risk = 0 if @finding.risk == nil
     @finding.save
 
@@ -780,6 +997,21 @@ get '/report/:id/findings/:finding_id/edit' do
     if @finding == nil
         return "No Such Finding"
     end
+
+    @summary_percent = config_options["summary_percent"]
+    article = OTS.parse(markup_clean(@finding.overview))
+
+    # nlp summarize 
+    if @finding.summary.to_s.empty?
+        @finding.summary = article.summarize(percent: @summary_percent).first[:sentence]
+    end
+
+    if @finding.tags.to_s.empty?
+        article.topics.each do |tag|
+            @finding.tags = ""
+            @finding.tags << ','+tag
+        end
+    end    
 
     # attachments autocomplete work
     temp_attaches = Attachments.all(:report_id => id)
@@ -825,11 +1057,6 @@ post '/report/:id/findings/:finding_id/edit' do
     # to prevent title's from degenerating with &gt;, etc. [issue 237]
     data["title"] = data["title"].gsub('&amp;','&')
 
-    if(config_options["dread"])
-        data["dread_total"] = data["damage"].to_i + data["reproducability"].to_i + data["exploitability"].to_i + data["affected_users"].to_i + data["discoverability"].to_i
-    elsif(config_options["cvss"])
-        data = cvss(data)
-    end
     # Update the finding with templated finding stuff
     @finding.update(data)
 
@@ -837,6 +1064,7 @@ post '/report/:id/findings/:finding_id/edit' do
     # => leave it up to the user to make the calculation if they switch mid report
     @finding.dread_total = 0 if @finding.dread_total == nil
     @finding.cvss_total = 0 if @finding.cvss_total == nil
+    @finding.cvss_score = 0 if @finding.cvss_score == nil
     @finding.risk = 0 if @finding.risk == nil
     @finding.save
 
@@ -873,6 +1101,7 @@ get '/report/:id/findings/:finding_id/upload' do
                     :exploitability => @finding.exploitability,
                     :affected_users => @finding.affected_users,
                     :discoverability => @finding.discoverability,
+                    # legacy
                     :dread_total => @finding.dread_total,
                     :cvss_base => @finding.cvss_base,
                     :cvss_impact => @finding.cvss_impact,
@@ -881,6 +1110,10 @@ get '/report/:id/findings/:finding_id/upload' do
                     :cvss_environmental => @finding.cvss_environmental,
                     :cvss_modified_impact => @finding.cvss_modified_impact,
                     :cvss_total => @finding.cvss_total,
+                    ###########################################
+                    :cvss_score => @finding.cvss_score,
+                    :cvss_vector => @finding.cvss_vector,
+                    :cvss_severity => @finding.cvss_severity,
                     :effort => @finding.effort,
                     :type => @finding.type,
                     :overview => @finding.overview,
@@ -888,6 +1121,9 @@ get '/report/:id/findings/:finding_id/upload' do
                     :remediation => @finding.remediation,
                     :approved => false,
                     :references => @finding.references,
+                    :tags => @finding.tags,
+                    :parameter => @finding.parameter,
+                    :method => @finding.method,
                     :risk => @finding.risk
                     }
 
@@ -895,6 +1131,80 @@ get '/report/:id/findings/:finding_id/upload' do
     @new_finding.save
 
     redirect to("/report/#{id}/findings")
+end
+
+post '/report/:id/findings/:finding_id/edit' do
+    # Check for kosher name in report name
+    id = params[:id]
+
+    # Query for the report
+    @report = get_report(id)
+
+    if @report == nil
+        return "No Such Report"
+    end
+
+    finding_id = params[:finding_id]
+
+    # Query for all Findings
+    @finding = Findings.first(:report_id => id, :id => finding_id)
+
+    if @finding == nil
+        return "No Such Finding"
+    end
+
+    error = mm_verify(request.POST)
+    if error.size > 1
+        return error
+    end
+    data = url_escape_hash(request.POST)
+
+    # to prevent title's from degenerating with &gt;, etc. [issue 237]
+    data["title"] = data["title"].gsub('&amp;','&')
+
+    # Update the finding with templated finding stuff
+    @finding.update(data)
+
+    # because of multiple scores we need to make sure all are set
+    # => leave it up to the user to make the calculation if they switch mid report
+    @finding.dread_total = 0 if @finding.dread_total == nil
+    @finding.cvss_total = 0 if @finding.cvss_total == nil
+    @finding.cvss_score = 0 if @finding.cvss_score == nil
+    @finding.risk = 0 if @finding.risk == nil
+    @finding.save
+
+    redirect to("/report/#{id}/findings")
+end
+
+# update finding summary
+post '/report/:id/findings/:finding_id/summary' do
+    # Check for kosher name in report name
+    id = params[:id]
+
+    # Query for the report
+    @report = get_report(id)
+
+    if @report == nil
+        return "No Such Report"
+    end
+
+    finding_id = params[:finding_id]
+
+    # Query for all Findings
+    @finding = Findings.first(:report_id => id, :id => finding_id)
+
+    if @finding == nil
+        return "No Such Finding"
+    end
+
+    error = mm_verify(request.POST)
+    if error.size > 1
+        return error
+    end
+    data = url_escape_hash(request.POST)
+
+    @finding.summary = data['value']
+    @finding.save
 end
 
 # Remove a finding from the report
@@ -1061,10 +1371,8 @@ get '/report/:id/generate' do
     @report.save
 
     # Query for the findings that match the report_id
-    if(config_options["dread"])
-        @findings = Findings.all(:report_id => id, :order => [:dread_total.desc])
-    elsif(config_options["cvss"])
-        @findings = Findings.all(:report_id => id, :order => [:cvss_total.desc])
+    if(config_options["cvss"])
+        @findings = Findings.all(:report_id => id, :order => [:cvss_score.desc])
     else
         @findings = Findings.all(:report_id => id, :order => [:risk.desc])
     end
@@ -1179,6 +1487,96 @@ get '/report/:id/generate' do
     docx_modify(rand_file, docx,'word/document.xml')
 
     send_file rand_file, :type => 'docx', :filename => "#{@report.report_name}.docx"
+end
+
+# Generate the remediation plan
+get '/report/:id/remediation' do
+    id = params[:id]
+
+    # Query for the report
+    @report = get_report(id)
+
+    if @report == nil
+        return "No Such Report"
+    end
+
+    user = User.first(:username => get_username)
+
+    if user
+        @report.consultant_name = user.consultant_name
+        @report.consultant_phone = user.consultant_phone
+        @report.consultant_email = user.consultant_email
+        @report.consultant_title = user.consultant_title
+        @report.consultant_company = user.consultant_company
+
+    else
+        @report.consultant_name = ""
+        @report.consultant_phone = ""
+        @report.consultant_email = ""
+        @report.consultant_title = ""
+        @report.consultant_company = ""
+
+    end
+    @report.save
+
+    # Query for the findings that match the report_id
+    if(config_options["cvss"])
+        @findings = Findings.all(:report_id => id, :order => [:cvss_score.desc])
+    else
+        @findings = Findings.all(:report_id => id, :order => [:risk.desc])
+    end
+
+    p = Axlsx::Package.new
+    wb = p.workbook
+    wb.styles do |s|
+        head = s.add_style :bg_color => "00", :fg_color => "FF"
+
+        critical = 0
+        high = 0
+        medium = 0
+        low = 0
+        informational = 0
+
+        wb.add_worksheet(:name => "Remediation Plan") do |sheet|
+            sheet.add_row ["ID", "Title", "Description", "URL", "Parameter", "Method", "Severity", "CVSS", "Remediation"]
+            sheet.row_style 0, head
+
+            @findings.each do |finding|
+                # cleaning markup
+                remediation_clean = markup_clean(finding.remediation)
+                description_clean = markup_clean(finding.overview)
+
+                if finding.cvss_severity == "Informational"
+                    informational += 1
+                elsif finding.cvss_severity == "Low"
+                    low += 1
+                elsif finding.cvss_severity == "Medium"
+                    medium += 1
+                elsif finding.cvss_severity == "High"
+                    high += 1
+                elsif finding.cvss_severity == "Critical"
+                    medium += 1
+                end
+
+                sheet.add_row [finding.id, finding.title, description_clean, finding.affected_hosts, finding.parameter , finding.method, finding.cvss_severity, finding.cvss_score, remediation_clean]
+            end
+            sheet.column_widths nil, nil, 100, nil, nil, nil, nil, nil, 100
+        end
+
+        wb.add_worksheet(:name => "Statistics") do |sheet|
+            sheet.add_row ["Informational", "Low", "Medium", "High", "Critical"]
+            #sheet.add_row [2,4,5,6,7]
+            sheet.add_row [informational, low, medium, high, critical]
+            sheet.add_chart(Axlsx::Bar3DChart, :start_at => "A3", :end_at => "O20") do |chart|
+              chart.add_series :data => sheet["A2:E2"], :labels => sheet["A1:E1"], :title => "Stats by Severity", :colors => ["00FF00", "0000FF"]
+            end
+        end
+    end
+
+    p.serialize("#{@report.report_name}_RemediationPlan.xlsx")
+    xls_file = "#{@report.report_name}_RemediationPlan.xlsx"
+
+    send_file xls_file, :type => 'xlsx', :filename => "#{@report.report_name}_RemediationPlan.xlsx"
 end
 
 # Export a report
@@ -1564,4 +1962,3 @@ get '/report/:id/report_plugins' do
     }
     haml :enabled_plugins, :encode_html => true
 end
-

@@ -12,7 +12,6 @@ config_options = JSON.parse(File.read('./config.json'))
 get '/master/findings' do
     @findings = TemplateFindings.all(:order => [:title.asc])
     @master = true
-    @dread = config_options["dread"]
     @cvss = config_options["cvss"]
 
     haml :findings_list, :encode_html => true
@@ -21,7 +20,6 @@ end
 # Create a new templated finding
 get '/master/findings/new' do
     @master = true
-    @dread = config_options["dread"]
     @cvss = config_options["cvss"]
     @nessusmap = config_options["nessusmap"]
     @vulnmap = config_options["vulnmap"]
@@ -65,17 +63,12 @@ post '/master/findings/new' do
         @vulnmappings.save
     end
 
-    if (config_options["cvss"])
-        data = cvss(data)
-    end
-
     redirect to('/master/findings')
 end
 
 # Edit the templated finding
 get '/master/findings/:id/edit' do
     @master = true
-    @dread = config_options["dread"]
     @cvss = config_options["cvss"]
     @nessusmap = config_options["nessusmap"]
     @burpmap = config_options["burpmap"]
@@ -129,12 +122,6 @@ post '/master/findings/:id/edit' do
 
     # to prevent title's from degenerating with &gt;, etc. [issue 237]
     data["title"] = data["title"].gsub('&amp;','&')
-
-    if(config_options["dread"])
-        data["dread_total"] = data["damage"].to_i + data["reproducability"].to_i + data["exploitability"].to_i + data["affected_users"].to_i + data["discoverability"].to_i
-    elsif(config_options["cvss"])
-        data = cvss(data)
-    end
 
     # split out any nessus mapping data
     nessusdata = Hash.new()
