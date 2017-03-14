@@ -30,7 +30,7 @@ end
 def url_escape_hash(hash)
 	hash.each do |k,v|
 		v = CGI::escapeHTML(v)
-
+		
     if v
 			# convert bullets
 			v = v.gsub("*-","<bullet>")
@@ -73,11 +73,23 @@ end
 
 def meta_markup(text)
 	new_text = text.gsub("<paragraph>","&#x000A;").gsub("</paragraph>","")
+	new_text = new_text.gsub("<Paragraph>","&#x000A;").gsub("</Paragraph>","")
 	new_text = new_text.gsub("<bullet>","*-").gsub("</bullet>","-*")
 	new_text = new_text.gsub("<h4>","[==").gsub("</h4>","==]")
 	new_text = new_text.gsub("<code>","[[[").gsub("</code>","]]]")
 	new_text = new_text.gsub("<indented>","[--").gsub("</indented>","--]")
 	new_text = new_text.gsub("<italics>","[~~").gsub("</italics>","~~]")
+end
+
+def markup_clean(text)
+	new_text = text.gsub("<paragraph>","").gsub("</paragraph>","")
+	new_text = new_text.gsub("<Paragraph>","").gsub("</Paragraph>","")
+	new_text = new_text.gsub("<bullet>","").gsub("</bullet>","")
+	new_text = new_text.gsub("<h4>","").gsub("</h4>","")
+	new_text = new_text.gsub("<code>","").gsub("</code>","")
+	new_text = new_text.gsub("<indented>","").gsub("</indented>","")
+	new_text = new_text.gsub("<italics>","").gsub("</italics>","")
+	new_text = new_text.gsub("&#39;","'")
 end
 
 
@@ -180,6 +192,7 @@ def mm_verify(hash)
 	end
 	return error
 end
+
 
 def compare_text(new_text, orig_text)
  if orig_text == nil
@@ -389,17 +402,9 @@ end
 #    this sets a score for all three in case the user switches later
 
 def convert_score(finding)
-	if(finding.cvss_total == nil)
+	if(finding.cvss_score == nil)
 		puts "|!| No CVSS score exists"
 		finding.cvss_total = 0
-	end
-	if(finding.dread_total == nil)
-		puts "|!| No CVSS score exists"
-		finding.dread_total = 0
-	end
-	if(finding.risk == nil)
-		puts "|!| No CVSS score exists"
-		finding.risk = 0
 	end
 	return finding
 end

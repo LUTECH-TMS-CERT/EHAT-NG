@@ -39,12 +39,26 @@ def clean(text)
     text = text.gsub("]]>","")
     text = text.gsub("\n\n","\n")
 
+    # nexpose needs this
+    text = text.gsub("<Paragraph>","<paragraph>")
+    text = text.gsub("</Paragraph>","</paragraph>")
+
     text = text.gsub("\n","\r\n")
 
     text_ = url_escape_hash({'a' => text})
     text = text_['a']
 
     return text
+end
+
+def nexpose_clean(text)
+    new_text = text.gsub("&lt;paragraph&gt;","<paragraph>")
+    new_text = new_text.gsub("&lt;/paragraph&gt;","</paragraph>")
+end
+
+def nexpose_unencode(text)
+    new_text = text.gsub("&lt;paragraph&gt;","")
+    new_text = new_text.gsub("&lt;/paragraph&gt;","")
 end
 
 def uniq_findings(findings)
@@ -126,7 +140,6 @@ def parse_nessus_xml(xml,threshold)
                 finding.exploitability = 1
                 finding.affected_users = 1
                 finding.discoverability = 1
-                finding.dread_total = 1
 
                 finding.affected_hosts = hostnode["name"]
 
@@ -148,6 +161,76 @@ def parse_nessus_xml(xml,threshold)
     return vulns
 end
 
+def parse_nexpose_xml(xml)
+    vulns = Hash.new
+    findings = Array.new
+    items = Array.new
+
+    doc = Nokogiri::XML(xml)
+
+    doc.xpath('/NexposeReport/VulnerabilityDefinitions/vulnerability').each do |v|
+        title = v['title'].to_s
+        description = v.xpath('./description/ContainerBlockElement/Paragraph').first.to_s
+        cvss = v['cvssScore'].to_s
+        nexpose_id = v['id'].to_s
+        references = {}
+        v.xpath('./references/reference').each do |reference|
+            references[reference['source']] = reference.content.to_s
+        end
+        solutions = []
+        v.xpath('./solution/ContainerBlockElement/UnorderedList/ListItem').each do |item|
+            item.xpath('./Paragraph').each do |solution|
+                solutions << solution.content.to_s
+            end
+        end
+        hosts = []
+        doc.xpath('/NexposeReport/nodes/node').each do |n|
+            host = n['address'].to_s
+            n.xpath('./endpoints/endpoint/services/service/tests/test').each do |t|
+                if t['status'] == 'vulnerable-version' and t['id'] == nexpose_id
+                    hosts << host
+                end
+            end
+        end
+        finding = Findings.new()
+        finding.title = nexpose_clean(clean(title.to_s))
+        finding.overview = nexpose_clean(clean(description.to_s))
+        finding.remediation = nexpose_clean(clean(solutions.to_s))
+        finding.cvss_score = nexpose_clean  (clean(cvss.to_s))
+
+        if cvss.to_i >= 9
+            finding.cvss_severity = "Critical"
+        elsif cvss.to_i <= 8.9 and cvss.to_i >= 7
+            finding.cvss_severity = "High"
+        elsif cvss.to_i <= 6.9 and cvss.to_i >= 4
+            finding.cvss_severity = "Medium"
+        elsif cvss.to_i <= 3.9 and cvss.to_i >= 0.1
+            finding.cvss_severity = "Low"
+        elsif cvss.to_i == 0
+            finding.cvss_severity = "Informational"
+        end
+
+        # can this be inherited from an import properly?
+        finding.type = "Imported from Nexpose"
+
+        finding.affected_hosts = hosts.to_s.gsub('[', '').gsub(']', '').gsub('"', '')
+
+        finding.references = references
+
+        if references.has_key?('cve')
+            finding.cve = references['cve']
+            p finding.cve 
+        end
+
+        findings << finding
+        items << nexpose_id
+    end
+
+    vulns["findings"] = findings
+    return vulns
+
+end
+
 def parse_burp_xml(xml)
     vulns = Hash.new
     findings = Array.new
@@ -163,22 +246,15 @@ def parse_burp_xml(xml)
             finding.remediation = clean(issue.css('remediationBackground').text.to_s())
 
             if issue.css('severity').text == 'Low'
-                finding.risk = 1
+                finding.cvss_severity = 'Low'
             elsif issue.css('severity').text == 'Medium'
-                finding.risk = 2
+                finding.cvss_severity = 'Medium'
             elsif issue.css('severity').text =='High'
-                finding.risk = 3
+                finding.cvss_severity = 'High'
             else
-                finding.risk = 1
+                finding.cvss_severity = 'Informational'
             end
 
-            # hardcode the DREAD score, the user assign the risk
-            finding.damage = 1
-            finding.reproducability = 1
-            finding.exploitability = 1
-            finding.affected_users = 1
-            finding.discoverability = 1
-            finding.dread_total = 1
             finding.type = "Web Application"
 
             findings << finding

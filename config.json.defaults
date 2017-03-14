@@ -1,17 +1,18 @@
 {
   "port": "8443",
   "use_ssl": true,
-  "bind_address": "0.0.0.0",
+  "bind_address": "127.0.0.1",
   "ssl_certificate": "./cert.pem",
   "ssl_key": "key.pem",
   "ldap": false,
   "ldap_domain": "",
   "ldap_dc": "",
-  "dread": false,
-  "cvss": false,
+  "cvss": true,
   "nessusmap": false,
+  "nexposemap": true,
   "burpmap": false,
   "vulnmap": false,
+  "calendar": true,
   "finding_types": [
     "Web Application",
     "Business Logic",
@@ -27,10 +28,12 @@
     "Network Security",
     "System Security",
     "Logging and Auditing",
-    "Imported"
+    "Imported",
+    "Imported from Nexpose",
+    "EHAT Legacy"
   ],
-  "logo": "/img/logo_1.svg",
-  "auto_import": false,
+  "logo": "/img/logo_1.png",
+  "auto_import": true,
   "chart": true,
   "user_defined_variables": [
 
