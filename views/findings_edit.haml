@@ -1,9 +1,17 @@
 %link{:href => "/css/bootstrap-suggest.css", :rel => "stylesheet"}/
 %script{:src => "/js/bootstrap-suggest.js"}
+%script{:src => "/js/cvss.js"}
+%script{:src => "/js/taggle.js"}
 
 .span10
   %br
   %h2 #{@finding.title}
+  %a{:href => "#", :'data-type' => "text", :id => 'summary', :'data-pk' => "#{@finding.id}", :'data-url' => "/report/#{@report.id}/findings/#{@finding.id}/summary", :'data-title' => "summary"} #{@finding.summary}
+  :javascript
+    $.fn.editable.defaults.mode = 'inline';
+    $(document).ready(function() {
+    $('#summary').editable();
+    });
   %br
   %br
   %form{ :class => "form-horizontal", :method => 'post', :enctype => 'application/x-www-form-urlencoded'}
@@ -11,6 +19,21 @@
       %label{ :class => "control-label", :for => "title" } Title
       .controls
         %input{ :type => 'text', :name => 'title', :value => "#{@finding.title}"}
+    .control-group
+      %label{ :class => "control-label", :for => "input-tags" } Tags
+      .controls
+        %input{ :type => 'text', :id => 'input-tags' ,:name => 'tags', :value => "#{@finding.tags}"}
+      %script{:type=>"text/javascript"}
+        $('#input-tags').selectize({
+        delimiter: ',',
+        persist: false,
+        create: function(input) {
+        return {
+        value: input,
+        text: input
+        }
+        }
+        });
     -if !@master
       %br
       .control-group
@@ -31,6 +54,30 @@
             %input{ :type=>"checkbox", :name => 'approved', :checked=>"checked"}
           - else
             %input{ :type=>"checkbox", :name => 'approved'}
+      .control-group
+        %label{ :class => "control-label", :for => "cvss_score" } CVSS Score
+        .controls
+          %input{ :type => 'text', :id => 'cvss_score' ,:name => 'cvss_score', :value => "#{@finding.cvss_score}", :required => true}
+      .control-group
+        %label{ :class => "control-label", :for => "cvss_vector" } CVSS Vector
+        .controls
+          %input{ :type => 'text', :id => 'cvss_vector' ,:name => 'cvss_vector', :value => "#{@finding.cvss_vector}", :required => false}
+      .control-group
+        %label{ :class => "control-label", :for => "cvss_severity" } CVSS Severity
+        .controls
+          %input{ :type => 'text', :id => 'cvss_severity' ,:name => 'cvss_severity', :value => "#{@finding.cvss_severity}", :required => true}
+      %div{:id => 'cvssboard'}
+      :javascript
+        var c = new CVSS("cvssboard", {
+            onchange: function() {
+                document.getElementById("cvss_vector").value = c.get().vector;
+                document.getElementById("cvss_score").value = c.get().score;
+                document.getElementById("cvss_severity").value = c.get().severity;
+            }
+        });
+        if (document.getElementById("cvss_vector").value.length > 0) {
+            c.set(document.getElementById("cvss_vector").value);
+        }
       - if @vulnmap
         .control-group
           %label{ :class => "control-label", :for => "existingvulnmaps" } Vuln IDs mapped to this finding
@@ -51,7 +98,7 @@
               Add new Vuln ID mapping
           .modal{:id=>'mymodal', :class=>'modal hide fade', :tabindex=>'-1', :role=>'dialog', "aria-labelledby"=>'modal-label', "aria-hidden"=>'true'}
             .modal-header
-              %button{:type=>'button', :class=>'close', "data-dismiss"=>"modal", "aria-hidden"=>"true"}
+              %button{:type=>'button', :class=>'close btn btn-default', "data-dismiss"=>"modal", "aria-hidden"=>"true"}
                 x
               %h3{:id=>"modal-label"}
                 Vulnerability Importing
@@ -126,7 +173,7 @@
               Add new Burp ID mapping
           .modal{:id=>'burpmodal', :class=>'modal hide fade', :tabindex=>'-1', :role=>'dialog', "aria-labelledby"=>'modal-label', "aria-hidden"=>'true'}
             .modal-header
-              %button{:type=>'button', :class=>'close', "data-dismiss"=>"modal", "aria-hidden"=>"true"}
+              %button{:type=>'button', :class=>'close btn btn-default', "data-dismiss"=>"modal", "aria-hidden"=>"true"}
                 x
               %h3{:id=>"modal-label"}
                 Mapping Burp findings
@@ -138,169 +185,32 @@
               %br
           .controls
             %input{ :type => 'text', :name => 'burp_pluginid'}
-    - if @dread
-      .control-group
-        %label{ :class => "control-label", :for => "damage" } Damage
-        .controls
-          %input{ :type => 'number', :min => '1', :max => '10', :name => 'damage', :value => "#{@finding.damage}", :required => true}
-      .control-group
-        %label{ :class => "control-label", :for => "reproducability" } Reproducibility
-        .controls
-          %input{ :type => 'number', :min => '1', :max => '10', :name => 'reproducability', :value => "#{@finding.reproducability}", :required => true}
-      .control-group
-        %label{ :class => "control-label", :for => "exploitability" } Exploitability
-        .controls
-          %input{ :type => 'number', :min => '1', :max => '10', :name => 'exploitability', :value => "#{@finding.exploitability}", :required => true}
-      .control-group
-        %label{ :class => "control-label", :for => "affected_users" } Affected Users
-        .controls
-          %input{ :type => 'number', :min => '1', :max => '10', :name => 'affected_users', :value => "#{@finding.affected_users}", :required => true}
-      .control-group
-        %label{ :class => "control-label", :for => "discoverability" } Discoverability
-        .controls
-          %input{ :type => 'number', :min => '1', :max => '10', :name => 'discoverability', :value => "#{@finding.discoverability}", :required => true}
     - elsif @cvss
       .control-group
-        %label{ :class => "control-label", :for => "av" } Access Vector
+        %label{ :class => "control-label", :for => "cvss_score" } CVSS Score
         .controls
-          %select{ :name => "av" }
-            - options.av.each do |av|
-              - if av == @finding.av
-                %option{ :selected => "selected" } #{av}
-              - else
-                %option #{av}
+          %input{ :type => 'text', :id => 'cvss_score' ,:name => 'cvss_score', :value => "#{@finding.cvss_score}", :required => true}
       .control-group
-        %label{ :class => "control-label", :for => "ac" } Access Complexity
+        %label{ :class => "control-label", :for => "cvss_vector" } CVSS Vector
         .controls
-          %select{ :name => "ac" }
-            - options.ac.each do |ac|
-              - if ac == @finding.ac
-                %option{ :selected => "selected" } #{ac}
-              - else
-                %option #{ac}
+          %input{ :type => 'text', :id => 'cvss_vector' ,:name => 'cvss_vector', :value => "#{@finding.cvss_vector}", :required => true}
       .control-group
-        %label{ :class => "control-label", :for => "au" } Authentication
+        %label{ :class => "control-label", :for => "cvss_severity" } CVSS Severity
         .controls
-          %select{ :name => "au" }
-            - options.au.each do |au|
-              - if au == @finding.au
-                %option{ :selected => "selected" } #{au}
-              - else
-                %option #{au}
-      .control-group
-        %label{ :class => "control-label", :for => "c" } Confidentiality Impact
-        .controls
-          %select{ :name => "c" }
-            - options.c.each do |c|
-              - if c == @finding.c
-                %option{ :selected => "selected" } #{c}
-              - else
-                %option #{c}
-      .control-group
-        %label{ :class => "control-label", :for => "i" } Integrity Impact
-        .controls
-          %select{ :name => "i" }
-            - options.i.each do |i|
-              - if i == @finding.i
-                %option{ :selected => "selected" } #{i}
-              - else
-                %option #{i}
-      .control-group
-        %label{ :class => "control-label", :for => "a" } Availability Impact
-        .controls
-          %select{ :name => "a" }
-            - options.a.each do |a|
-              - if a == @finding.a
-                %option{ :selected => "selected" } #{a}
-              - else
-                %option #{a}
-      .control-group
-        %label{ :class => "control-label", :for => "e" } Exploitability
-        .controls
-          %select{ :name => "e" }
-            - options.e.each do |e|
-              - if e == @finding.e
-                %option{ :selected => "selected" } #{e}
-              - else
-                %option #{e}
-      .control-group
-        %label{ :class => "control-label", :for => "rl" } Remediation Level
-        .controls
-          %select{ :name => "rl" }
-            - options.rl.each do |rl|
-              - if rl == @finding.rl
-                %option{ :selected => "selected" } #{rl}
-              - else
-                %option #{rl}
-      .control-group
-        %label{ :class => "control-label", :for => "rc" } Report Confidence
-        .controls
-          %select{ :name => "rc" }
-            - options.rc.each do |rc|
-              - if rc == @finding.rc
-                %option{ :selected => "selected" } #{rc}
-              - else
-                %option #{rc}
-      .control-group
-        %label{ :class => "control-label", :for => "cdp" } Collateral Damage Potential
-        .controls
-          %select{ :name => "cdp" }
-            - options.cdp.each do |cdp|
-              - if cdp == @finding.cdp
-                %option{ :selected => "selected" } #{cdp}
-              - else
-                %option #{cdp}
-      .control-group
-        %label{ :class => "control-label", :for => "td" } Target Distribution
-        .controls
-          %select{ :name => "td" }
-            - options.td.each do |td|
-              - if td == @finding.td
-                %option{ :selected => "selected" } #{td}
-              - else
-                %option #{td}
-      .control-group
-        %label{ :class => "control-label", :for => "cr" } Confidentiality Requirement
-        .controls
-          %select{ :name => "cr" }
-            - options.cr.each do |cr|
-              - if cr == @finding.cr
-                %option{ :selected => "selected" } #{cr}
-              - else
-                %option #{cr}
-      .control-group
-        %label{ :class => "control-label", :for => "ir" } Integrity Requirement
-        .controls
-          %select{ :name => "ir" }
-            - options.ir.each do |ir|
-              - if ir == @finding.ir
-                %option{ :selected => "selected" } #{ir}
-              - else
-                %option #{ir}
-      .control-group
-        %label{ :class => "control-label", :for => "ar" } Availability Requirement
-        .controls
-          %select{ :name => "ar" }
-            - options.ar.each do |ar|
-              - if ar == @finding.ar
-                %option{ :selected => "selected" } #{ar}
-              - else
-                %option #{ar}
-
+          %input{ :type => 'text', :id => 'cvss_severity' ,:name => 'cvss_severity', :value => "#{@finding.cvss_severity}", :required => true}
+      %div{:id => 'cvssboard'}
+      :javascript
+        var c = new CVSS("cvssboard", {
+            onchange: function() {
+                document.getElementById("cvss_vector").value = c.get().vector;
+                document.getElementById("cvss_score").value = c.get().score;
+                document.getElementById("cvss_severity").value = c.get().severity;
+            }
+        });
+        if (document.getElementById("cvss_vector").value.length > 0) {
+            c.set(document.getElementById("cvss_vector").value);
+        }
     - else
-      .control-group
-        %label{ :class => "control-label", :for => "risk" } Vulnerability Risk Level
-        .controls
-          %select{ :name => "risk" }
-            - risk_types = ["None", "Low", "Moderate", "High", "Critical"]
-            - if !@finding.risk
-              - @finding.risk = @finding.dread_total/10
-              - @finding.risk = 4 if dread_total == 50
-            - [1,2,3,4].each do |r_type|
-              - if r_type == @finding.risk
-                %option{ :value => "#{r_type}", :selected => "selected" } #{risk_types[r_type]}
-              - else
-                %option{ :value => "#{r_type}"} #{risk_types[r_type]}
     .control-group
       %label{ :class => "control-label", :for => "effort" } Remediation Effort
       .controls
@@ -320,12 +230,23 @@
             - else
               %option #{type}
     .control-group
+      %label{ :class => "control-label", :for => "parameter" } Parameter
+      .controls
+        %input{ :type => 'text', :value => "#{@finding.parameter}" ,:name => 'parameter'}
+    .control-group
+      %label{ :class => "control-label", :for => "method" } Method
+      .controls
+        %select{ :name => "method" }
+          %option{ :selected => "selected"}#{@finding.method}
+          %option GET
+          %option POST
+    .control-group
       %label{ :class => "control-label", :for => "overview" }
         %a{:href=> '#mymodal', "data-toggle"=>'modal', :class=>'btn btn-info'}
           Overview
       .modal{:id=>'mymodal', :class=>'modal hide fade', :tabindex=>'-1', :role=>'dialog', "aria-labelledby"=>'modal-label', "aria-hidden"=>'true'}
         .modal-header
-          %button{:type=>'button', :class=>'close', "data-dismiss"=>"modal", "aria-hidden"=>"true"}
+          %button{:type=>'button', :class=>'close btn btn-default', "data-dismiss"=>"modal", "aria-hidden"=>"true"}
             x
           %h3{:id=>"modal-label"}
             Meta Markup
@@ -474,6 +395,6 @@
 
 
     - id_r = @report ? "/report/#{@report.id}/findings" : "/master/findings"
-    %input{:type => 'submit', :value => 'Save'}
+    %input{:type => 'submit', :value => 'Save', :class => "btn btn-default"}
     %a{ :href => "#{id_r}"}
-      %input{ :type => "button", :value => 'Cancel'}
+      %input{ :type => "button", :value => 'Cancel', :class => "btn btn-default"}

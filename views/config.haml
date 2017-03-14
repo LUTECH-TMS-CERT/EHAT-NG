@@ -14,10 +14,6 @@
                 %option{ :selected => "selected" } Default
               - else
                 %option Default Scoring
-              - if @scoring == "dread"
-                %option{ :selected => "selected" } DREAD
-              - else
-                %option DREAD
               - if @scoring == "cvss"
                 %option{ :selected => "selected" } CVSS
               - else
@@ -27,7 +23,7 @@
           - next if k =~ /ssl_certificate/
           - next if k =~ /ssl_key/
           - next if k =~ /log_file/
-          - next if k == "cvss" or k == "dread"
+          - next if k == "cvss"
           %tr
             %td
               #{k}
@@ -41,8 +37,8 @@
                 %input{:type => 'text', :name => "#{k}", :value => "#{v.join(',')}"}
               - else
                 %input{:type => 'text', :name => "#{k}", :value => "#{v}"}
-      %input{:type => 'submit', :value => 'Save' }
+      %input{:type => 'submit', :value => 'Save', :class => "btn btn-default" }
         %a{ :href => "/admin/config"}
-      %input{ :type => "button", :value => 'Cancel'}
+      %input{ :type => "button", :value => 'Cancel', :class => "btn btn-default"}
 
 

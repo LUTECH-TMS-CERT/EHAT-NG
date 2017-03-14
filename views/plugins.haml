@@ -20,9 +20,9 @@
                     %input{:type => 'checkbox', :name => "#{plug['name']}", :checked => "checked"}
                   - else
                     %input{:type => 'checkbox', :name => "#{plug['name']}"}
-        %input{:type => 'submit', :value => 'Save' }
+        %input{:type => 'submit', :value => 'Save' , :class => "btn btn-default"}
         %a{ :href => "/admin/plugins"}
-        %input{ :type => "button", :value => 'Cancel'}
+        %input{ :type => "button", :value => 'Cancel', :class => "btn btn-default"}
     - else
       No plugins found.
   #{@plugin}
@@ -32,4 +32,4 @@
       %br
         %input{:type => 'file', :name => 'files[]', :multiple => true}
       %br
-        %input{:type => 'submit', :value => 'Upload' }
+        %input{:type => 'submit', :value => 'Upload' , :class => "btn btn-default"}

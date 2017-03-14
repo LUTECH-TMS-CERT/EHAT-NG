@@ -9,17 +9,32 @@
           %td
             Title &nbsp;
           %td
-            %input{:type => 'text', :name => 'report_name'}
+            %input{:type => 'text', :name => 'report_name', :required => true}
         %tr
           %td
             Full Company Name &nbsp;
           %td
-            %input{:type => 'text', :name => 'full_company_name'}
+            %input{:type => 'text', :name => 'full_company_name', :required => true}
         %tr
           %td
             Short Company Name &nbsp;
           %td
-            %input{:type => 'text', :name => 'short_company_name'}
+            %input{:type => 'text', :name => 'short_company_name', :required => true}
+        %tr
+          %td
+            Start Date &nbsp;
+          %td
+            %input{:type => 'text', :style => 'width: 90%', :name => 'start_date', :id => 'datepicker', :required => true}
+        %tr
+          %td
+            End Date &nbsp;
+          %td
+            %input{:type => 'text', :style => 'width: 90%', :name => 'end_date', :id => 'datepicker2', :required => true}
+        %tr
+          %td
+            Color &nbsp;
+          %td
+            %input{:type => 'text', :style => 'width: 90%', :name => 'color', :class => 'jscolor', :required => true}
         %tr
           %td{:style => 'width: 30%'}
             Report Type
@@ -32,9 +47,18 @@
                   - else
                     %option #{template.report_type}
       %br
-      %input{:type => 'submit', :value => 'Save' }
+      %input{:type => 'submit', :value => 'Save', :class => "btn btn-default"}
       %a{ :href => "/"}
-        %input{ :type => "button", :value => 'Cancel'}
+        %input{ :type => "button", :value => 'Cancel', :class => "btn btn-default"}
+      %script{:type=>"text/javascript"}
+        var picker = new Pikaday({
+        field: document.getElementById('datepicker'),
+        format: 'M/D/YYYY'
+        });
+        var picker2 = new Pikaday({
+        field: document.getElementById('datepicker2'),
+        format: 'M/D/YYYY'
+        });
     - else
       %h4
         Hrm, there don't seem to be any report templates. An admin will need to <a href="/admin/templates/add">add</a> one -_-

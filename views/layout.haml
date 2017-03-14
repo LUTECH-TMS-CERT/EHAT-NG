@@ -15,14 +15,35 @@
     %script{:src => "/js/bootstrap-button.js"}
     %script{:src => "/js/bootstrap-carousel.js"}
     %script{:src => "/js/bootstrap-typeahead.js"}
+    %script{:src => "/js/bootstrap-table.js"}
+    %script{:src => "/js/bootstrap-table-editable.js"}
+    %script{:src => "/js/bootstrap-table-export.js"}
+    %script{:src => "/js/tableExport.js"}
+    %script{:src => "/js/bootstrap-table-filter-control.js"}
+    %script{:src => "/js/nprogress.js"}
+    %script{:src => "/js/jscolor.min.js"}
+    %script{:src => "/js/moment.js"}
+    %script{:src => "/js/pikaday.js"}
+    %script{:src => "/js/Chart.bundle.min.js"}
+    %script{:src => "/js/selectize.js"}
+    %script{:src => "/js/list.js"}
+    %script{:src => "/js/bootstrap-editable.min.js"}
 
     %meta{:charset => "utf-8"}/
-    %title Serpico
+    %title Serpico-ng
     %meta{:content => "", :name => "description"}/
     %meta{:content => "", :name => "author"}/
     %link{:href => "/css/bootstrap.css", :rel => "stylesheet"}/
     %link{:href => "/css/bootstrap-responsive.css", :rel => "stylesheet"}/
+    %link{:href => "/css/nprogress.css", :rel => "stylesheet"}/
     %link{:href => "/css/font-awesome.css", :rel => "stylesheet"}/
+    %link{:href => "/css/pikaday.css", :rel => "stylesheet"}/
+    %link{:href => "/css/cvss.css", :rel => "stylesheet"}/
+    %link{:href => "/css/bootstrap-table.min.css", :rel => "stylesheet"}/
+    %link{:href => "/css/bootstrap-editable.css", :rel => "stylesheet"}/
+    %link{:href => "/css/selectize.css", :rel => "stylesheet"}/
+    %link{:href => "/css/listjs.css", :rel => "stylesheet"}/
+    %link{:href => "/css/bootstrap-editable.css", :rel => "stylesheet"}/
     :css
       body {
         padding-top: 60px;
@@ -42,6 +63,9 @@
       }
         %link{:href => "/css/bootstrap-responsive.css", :rel => "stylesheet"}
   - if valid_session?
+    %script{:type=>"text/javascript"}
+      NProgress.configure({ easing: 'ease', speed: 500 });
+      NProgress.start();
     %body
       .navbar.navbar-fixed-top
         .navbar-inner
@@ -50,6 +74,10 @@
               %a.fa.fa-file-word-o{:href => "/reports/list"} &nbsp;List Reports
             %li
               %a.fa.fa-pencil-square-o{:href => "/report/new"} &nbsp;New Report
+            %li
+              %a.fa.fa-bar-chart-o{:href => "/report/stats_cvss"} &nbsp;Statistics
+            %li
+              %a.fa.fa-calendar-o{:href => "/report/calendar"} &nbsp;Calendar
           .nav-collapse
             %ul.nav{"class" => "pull-right padded"}
               - if is_administrator?
@@ -111,13 +139,14 @@
                   %a{ :href => '/admin/attacments_backup' } Backup All Attachments
             - else
               - if @report
+                %script{:type=>"text/javascript"}
+                  NProgress.configure({ easing: 'ease', speed: 500 });
+                  NProgress.start();
                 %ul.nav.nav-list
                   %li.nav-header
                     #{@report.report_name}
                   %li
                     %a{ :href => "/report/#{@report.id}/edit" } Edit Report Information
-                  %li
-                    %a{ :href => "/report/#{@report.id}/generate" } Generate Report
                     %li.nav-header Findings
                   %li
                     %a{ :href => "/report/#{@report.id}/findings" } List Current Report Findings
@@ -130,18 +159,38 @@
                     %a{ :href => "/report/#{@report.id}/upload_attachments" } Upload New Attachment
                   %li
                     %a{ :href => "/report/#{@report.id}/attachments" } List Attachments
+                  %li
+                    %a{ :href => "/report/#{@report.id}/export_attachments" } Export Attachments
+                  %li
+                    %a{ :href => "/report/#{@report.id}/restore_attachments" } Restore Attachments
                   %li.nav-header Metasploit Data Management
                   %li
                     %a{ :href => "/report/#{@report.id}/hosts" } Hosts
                   %li
                     %a{ :href => "/report/#{@report.id}/vulns" } Vulnerabilities
                   %li.nav-header Additional
+                  %li.nav-header <a href="/report/#{@report.id}/additional_features">Additional Features</a>
+                  %script{:type=>"text/javascript"}
+                    NProgress.done();
+              - if @stats
+                %ul.nav.nav-list
+                  %li.nav-header
+                    Menu
                   %li
-                    %a{ :href => "/report/#{@report.id}/additional_features" } Additional Features
+                    %a{ :href => "/report/stats_cvss" } By Severity
                   %li
-                    %a{ :href => "/report/#{@report.id}/report_plugins" } Enabled Plugins
-
+                    %a{ :href => "/report/stats" } Top Vulnerability
+                  %li
+                    %a{ :href => "/report/stats_time" } Time View
+              - if @gantt
+                %ul.nav.nav-list
+                  %li.nav-header
+                    Menu
+                  %li
+                    %a{ :href => "/report/calendar" } Calendar
           =yield
+    %script{:type=>"text/javascript"}
+      NProgress.done();
   - else
     %body
     %link(rel="stylesheet" type="text/css" href="/css/signin.css")
@@ -153,3 +202,4 @@
       %input.form-control.btn-block{:autofocus => "", :placeholder => "Username", :required => "", :type => "text", :name=> "username"}
       %input.form-control.btn-block{:placeholder => "Password", :required => "", :type => "password", :name=> "password"}
       %button.btn.btn-signin.btn-block.form-control{:type => "submit"} Sign in
+

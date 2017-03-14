@@ -1,3 +1,5 @@
+%script{:src => "/js/cvss.js"}
+
 .span10
   %br
   %br
@@ -13,6 +15,7 @@
       %br
       &nbsp;
       %input{:type => "text", :class=>"form-control", :placeholder=>"Finding Name Search", :id=>"search"}
+      %input{:type => "text", :class=>"form-control", :placeholder=>"Tags Search (ALPHA)", :id=>"search2"}
       %style{:id => "search_style" }
       %span{:class=>"input-group-btn"}
       %script{:type=>"text/javascript"}
@@ -24,6 +27,15 @@
         return;
         }
         searchStyle.innerHTML = ".searchable:not([data-index*=\"" + this.value.toLowerCase().replace(/</g, '&rt;').replace(/>/g, '&lt;').replace(/"/g, '&quot;') + "\"]) { display: none; }";
+        });
+        // tag search
+        var searchStyle = document.getElementById('search_style');
+        document.getElementById('search2').addEventListener('input', function() {
+        if (!this.value) {
+        searchStyle.innerHTML = "";
+        return;
+        }
+        searchStyle.innerHTML = ".searchable2:not([data2-index*=\"" + this.value.toLowerCase().replace(/</g, '&rt;').replace(/>/g, '&lt;').replace(/"/g, '&quot;') + "\"]) { display: none; }";
         });
       %form{:method => 'post', :action => "/report/#{@report.id}/findings_add"}
         .table
@@ -61,7 +73,17 @@
                                   - if finding.overview
                                     %i{:class=>"icon-chevron-down", "data-toggle"=>"collapse", "data-target"=>"#info_#{finding.id}", :id=>"actionButton"}
                                     .info{ :id => "info_#{finding.id}", :class => "collapse out" }
-                                      #{finding.overview.gsub("<paragraph>","<br />").gsub("</paragraph>","").gsub("<bullet>","&#x2022;").gsub("</bullet>","")}
+                                      #{finding.overview.gsub("<paragraph>","").gsub("</paragraph>","").gsub("<bullet>","&#x2022;").gsub("</bullet>","").gsub("script","").gsub("<","").gsub(">","")}
+                                      - if finding.tags
+                                        %br
+                                        %br
+                                          %b
+                                            %u
+                                              Tags
+                                        - if finding.tags.length > 1
+                                          %span{:"data2-index" => "#{finding.title.downcase.gsub(' ','')}", :class=>"searchable2"} #{finding.tags.gsub("<paragraph>","<br/>").gsub("</paragraph>","").gsub("<bullet>","&#x2022;").gsub("</bullet>","")}
+                                        - else
+                                          None.
                                     - if @autoadd_hosts
                                       - @autoadd_hosts.keys.each do |x|
                                         - if finding.id == x.to_i
@@ -78,8 +100,8 @@
                                   - else
                                     %a{ :class => "btn btn-info", :href => "/master/findings/#{finding.id}/preview"}
                                       %i{:class => 'icon-play-circle icon-white', :title => 'Preview'}
-        %input{ :type => "submit", :value => 'Add' }
+        %input{ :type => "submit", :value => 'Add', :class => "btn btn-default" }
         %a{ :href => "/report/#{@report.id}/findings"}
-          %input{ :type => "button", :value => 'Cancel'}
+          %input{ :type => "button", :value => 'Cancel', :class => "btn btn-default"}
     - else
       No Findings Available

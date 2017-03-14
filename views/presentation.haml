@@ -53,21 +53,13 @@
           - @findings.each do |finding|
             :ruby
               # set the color in here
-              risk_types = ["Informational", "Low", "Moderate", "High", "Critical"]
-                if @dread
-                  risk_d = finding.dread_total/10
-                  risk_d = 4 if finding.dread_total == 50
-                  risk = risk_types[risk_d]
-                else
-                  risk = risk_types[finding.risk]
-                end
-                if risk == "Critical"
+              if finding.cvss_severity == "Critical"
                 color = "#FF4500"
-              elsif risk == "High"
+              elsif finding.cvss_severity == "High"
                 color = "#FF8C00"
-              elsif risk == "Moderate"
+              elsif finding.cvss_severity == "Medium"
                 color = "#0000FF"
-              elsif risk == "Low"
+              elsif finding.cvss_severity == "Low"
                 color = "#006400"
               else
                 color = "#000000"
@@ -77,7 +69,7 @@
                 #{finding.title}
               %td
                 %span{:style=>"color:#{color};"}
-                  #{risk.upcase}
+                  #{finding.cvss_severity}
       - @findings.each do |finding|
         %section
           %section{:style=>"vertical-align:top; text-align: left;"}
@@ -87,27 +79,19 @@
               Risk
               :ruby
                 # set the color in here
-                risk_types = ["Informational", "Low", "Moderate", "High", "Critical"]
-                  if @dread
-                    risk_d = finding.dread_total/10
-                    risk_d = 4 if finding.dread_total == 50
-                    risk = risk_types[risk_d]
-                  else
-                    risk = risk_types[finding.risk]
-                  end
-                  if risk == "Critical"
+                if finding.cvss_severity == "Critical"
                   color = "#FF4500"
-                elsif risk == "High"
+                elsif finding.cvss_severity == "High"
                   color = "#FF8C00"
-                elsif risk == "Moderate"
+                elsif finding.cvss_severity == "Medium"
                   color = "#0000FF"
-                elsif risk == "Low"
+                elsif finding.cvss_severity == "Low"
                   color = "#006400"
                 else
                   color = "#000000"
                 end
               %span{:style=>"color:#{color}; font-size:120%"}
-                #{risk.upcase}
+                #{finding.cvss_severity}
             - if finding.presentation_points
               %ul{:style=>"margin-left:10%"}
                 - finding.presentation_points.to_s.split("<paragraph>").each do |pp|

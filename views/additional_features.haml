@@ -10,12 +10,6 @@
         %a{ :href => "/report/#{@report.id}/export" } Export Current Report (Warning: Attachments must be exported separately)
     %tr
       %td
-        %a{ :href => "/report/#{@report.id}/export_attachments" } Export Attachments
-    %tr
-      %td
-        %a{ :href => "/report/#{@report.id}/restore_attachments" } Restore Attachments
-    %tr
-      %td
         %a{ :href => "/report/#{@report.id}/msfsettings" } Configure a Metasploit RPC Connection
     %tr
       %td
@@ -29,6 +23,9 @@
     %tr
       %td
         %a{ :href => "/report/#{@report.id}/import_burp" } Auto Add Findings from a Burp XML scanner report
+    %tr
+      %td
+        %a{ :href => "/report/#{@report.id}/import_nexpose" } Add Findings from a Nexpose XML scanner report
     %tr
       %td
         &nbsp;

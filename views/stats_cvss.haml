@@ -1,0 +1,39 @@
+%script{:type=>"text/javascript"}
+  NProgress.configure({ easing: 'ease', speed: 500 });
+  NProgress.start();
+
+.span9.indent2
+  %canvas{:id => "myChart", :width => "5", :height => "2"}
+
+%script{:type=>"text/javascript"}
+  NProgress.inc();
+
+%script{:type=>"text/javascript"}
+  var ctx = document.getElementById("myChart");
+  var myChart = new Chart(ctx, {
+  type: 'pie',
+  data: {
+  labels: ["Informational", "Low", "Medium", "High", "Critical"],
+  datasets: [{
+  data: [#{@informational}, #{@low}, #{@medium}, #{@high}, #{@critical}],
+  backgroundColor: [
+  "#0088CC",
+  "#008000",
+  "#F89406",
+  "#DC322F",
+  "#7030A0"
+  ],
+  hoverBackgroundColor: [
+  "#0078B4",
+  "#005900",
+  "#E28705",
+  "#BE2B29",
+  "#692D96",
+  ],
+  }]
+  },
+  options: {
+  }
+  });
+%script{:type=>"text/javascript"}
+  NProgress.done();
