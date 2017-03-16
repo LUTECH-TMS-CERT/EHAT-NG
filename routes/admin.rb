@@ -33,32 +33,30 @@ get '/admin/pull' do
 	end
 end
 
-#create DB backup
+#create DB backup and attachments
 get '/admin/dbbackup' do
 	redirect to("/no_access") if not is_administrator?
-  bdate  = Time.now()
-  filename = "./tmp/master" + "-" + (bdate.strftime("%Y%m%d%H%M%S") +".bak")
-	FileUtils::copy_file("./db/master.db", filename)
-  if not File.zero?(filename)
-    	send_file filename, :filename => "#{filename}", :type => 'Application/octet-stream'
-  else
-    	"No copy of the database is available. Please try again."
-    	sleep(5)
-    	redirect to("/admin/")
-	end
-end
 
-#create backup of all attachments
-get '/admin/attacments_backup' do
-  bdate  = Time.now()
-  zip_file = "./tmp/Attachments" + "-" + (bdate.strftime("%Y%m%d%H%M%S") +".zip")
-  Zip::File.open(zip_file, Zip::File::CREATE) do |zipfile|
-    Dir["./attachments/*" ].each do | name|
-      zipfile.add(name.split("/").last,name)
+    bdate  = Time.now()
+
+    db_filename = "./tmp/master-" + (bdate.strftime("%Y%m%d%H%M%S") +".bak")
+    attachments_filename = "./tmp/Attachments" + "-" + (bdate.strftime("%Y%m%d%H%M%S") +".zip")
+    global_filename = "./tmp/EHAT-NG_backup_" + (bdate.strftime("%Y%m%d%H%M%S") +".zip")
+
+    FileUtils::copy_file("./db/master.db", db_filename)
+
+    Zip::File.open(attachments_filename, Zip::File::CREATE) do |zipfile|
+        Dir["./attachments/*" ].each do | name|
+            zipfile.add(name.split("/").last,name)
+        end
     end
-  end
-  send_file zip_file, :type => 'zip', :filename => zip_file
-  #File.delete(rand_zip) should the temp file be deleted?
+
+    Zip::File.open(global_filename, Zip::File::CREATE) do |zipfile|
+        zipfile.add(db_filename.split("/").last,db_filename)
+        zipfile.add(attachments_filename.split("/").last,attachments_filename)
+    end
+
+    send_file global_filename, :type => 'zip', :filename => global_filename
 end
 
 # Create a new user
