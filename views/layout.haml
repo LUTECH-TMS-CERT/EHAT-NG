@@ -136,7 +136,6 @@
                   %a{ :href => '/admin/config' } Modify Configurations
                 %li
                   %a{ :href => '/admin/dbbackup' } Backup Master Database
-                  %a{ :href => '/admin/attacments_backup' } Backup All Attachments
             - else
               - if @report
                 %script{:type=>"text/javascript"}
@@ -196,7 +195,7 @@
     %link(rel="stylesheet" type="text/css" href="/css/signin.css")
     .container
     %form.form-signin{:action => "/login", :method => "POST", :role => "form"}
-      %img{:src => "http://www.lutech.it/wp-content/uploads/2013/10/Logo_Lutech_TM-300x42.png", :height => 150, :width =>  500, :class => 'text-center'}
+      %img{:src => "#{@logo}", :height => 150, :width =>  500, :class => 'text-center'}
       %br
       %br
       %input.form-control.btn-block{:autofocus => "", :placeholder => "Username", :required => "", :type => "text", :name=> "username"}
