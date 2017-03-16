@@ -40,7 +40,7 @@
 
   ],
   "threshold": "2",
-  "log_file": "./log/serpico.log",
+  "log_file": "http://www.lutech.it/wp-content/uploads/2013/10/Logo_Lutech_TM-300x42.png",
   "show_exceptions": true,
   "dread": false
 }
