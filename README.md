@@ -1,3 +1,20 @@
+# EHAT-NG (formerly SERPICO)
+
+EHAT is the short name for Ethical Hacking Activity Tracking platform, developed by LUTECH-TMS-CERT years ago.
+Actually, EHAT-NG is definitely more than just an activity tracking tool. It's SERPICO-on-steroids:
+* Import XML report from Nexpose
+* New Statistics & Charts
+* New risk scoring system w/ auto CVSS Calculator
+* Generate Remediation Plan in XLSX
+* Auto Summarize of findings overview thanks to NLP (Natural Language Processing)
+* ..and much more
+
+EHAT-NG has been developed by LUTECH-TMS-CERT, largely thanks to the contribution of its Andrea De Dominicis. Andrea has another SERPICO fork on Github.
+LUTECH-TMS-CERT decided to release EHAT-NG in opensource for the benefit of all.
+LUTECH-TMS-CERT is willing to collaborate with the community to make it grow and is looking for technical joint ventures with other organizations to proactively support the community and evolve the project.
+
+You may contact LUTECH-TMS-CERT at security at lutech dot it
+
 # Serpico
 ## SimplE RePort wrIting and CollaboratiOn tool
 Serpico is a penetration testing report generation and collaboration tool. It was developed to cut down on the amount of time it takes to write a penetration testing report.
