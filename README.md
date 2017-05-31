@@ -15,6 +15,49 @@ LUTECH-TMS-CERT is willing to collaborate with the community to make it grow and
 
 You may contact LUTECH-TMS-CERT at security at lutech dot it
 
+## Installation
+
+The installation commands for an Ubuntu 16.04.2 LTS are:
+
+Install required packages:
+```
+sudo apt-get install git ruby ruby-dev build-essential make pkg-config libxml2-dev libglib2.0-dev libsqlite3-dev bundler
+```
+
+Clone git repository:
+```
+git clone https://github.com/LUTECH-TMS-CERT/EHAT-NG.git
+```
+
+Install EHAT-NG dependencies:
+```
+cd EHAT-NG && bundler install
+```
+
+Clone repository of dm-types library:
+```
+cd .. && git clone -b "gem-v1.2.2-with-frozen-nilclass-fix" https://github.com/julienma/dm-types.git
+```
+
+Install dm-types library:
+```
+cd dm-types && gem build dm-types.gemspec && sudo gem install dm-types-1.2.2.gem
+```
+
+## Post-Installation Releases : Getting Started
+
+### Ubuntu 16.04.2 LTS
+
+Launch the first_time.rb script (in order to initialize the database) and follow the instructions:
+```
+cd EHAT-NG && ruby scripts/first_time.rb
+```
+
+And then start EHAT-NG (HTTPS, 8443 port, on all interfaces by default):
+```
+cd EHAT-NG && ruby serpico.rb &
+```
+
 # Serpico
 ## SimplE RePort wrIting and CollaboratiOn tool
 Serpico is a penetration testing report generation and collaboration tool. It was developed to cut down on the amount of time it takes to write a penetration testing report.
@@ -24,56 +67,6 @@ Video Demo of Functionality:
 * [Serpico - Demo 1](https://www.youtube.com/watch?v=G_qYcL4ynSc)
 
 * [Additional Video Demos](https://github.com/SerpicoProject/Serpico/wiki#online-demos)
-
-## Installation
-
-The installation options are:
-
-* [Install Official Release](https://github.com/SerpicoProject/Serpico/releases): The prefered method of installation which includes all dependencies in one package.
-
-* [Developer Build](https://github.com/SerpicoProject/Serpico/wiki/Developer-Build): Simple Instructions to build from clone
-
-* [Windows Developer Build](https://github.com/SerpicoProject/Serpico/wiki/Windows-Installation): Serpico can also be built and run on Windows
-
-* [Running Serpico From Docker](https://github.com/SerpicoProject/Serpico/wiki/Running-Serpico-From-Docker)
-
-## Post-Installation Releases : Getting Started
-
-### Kali/Ubuntu/Debian
-
-Initialize the database:
-```
-/opt/Serpico/init_serpico.sh
-```
-
-And then start Serpico:
-```
-/opt/Serpico/start_serpico.sh
-```
-
-### OS X
-
-Initialize the database:
-```
-/Users/Shared/Serpico/init_serpico.sh
-```
-
-Start Serpico:
-```
-/Users/Shared/Serpico/start_serpico.sh
-```
-
-### Windows
-
-Initialize the database:
-```
-C:\Serpico\init_serpico.bat
-```
-
-Start Serpico:
-```
-C:\Serpico\start_serpico.bat
-```
 
 ## About Serpico
 Serpico is at its core a report generation tool but targeted at creating information security reports. When building a report the user adds "findings" from the template database to the report. When there are enough findings, click 'Generate Report' to create the docx with your findings. The docx design comes from a Report Template which can be added through the UI; a default one is included. The Report Templates use a custom Markup Language to stub the data from the UI (i.e. findings, customer name, etc) and put them into the report.
