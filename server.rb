@@ -18,7 +18,7 @@ class Server < Sinatra::Application
 
     #Set Logging
     if(config_options["log_file"] != "")
-        puts "|+| Started serpico on https://"+config_options["bind_address"]+":"+config_options["port"]
+        puts "|+| Started serpico on https://"+config_options["host"]+":"+config_options["port"]
         puts "|+| Logging to "+config_options["log_file"]
         log = File.new(config_options["log_file"], "a+")
         $stdout.reopen(log)
