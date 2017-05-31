@@ -64,7 +64,7 @@
                                           %i{:class => 'icon-pencil icon-white', :title => 'Edit'}
                                         %a{ :class => "btn btn-info", :href => "/master/findings/#{finding.id}/preview"}
                                           %i{:class => 'icon-play-circle icon-white', :title => 'Preview'}
-                                        %a{ :class => "btn btn-danger", :href => "/master/findings/#{finding.id}/delete"}
+                                        %a{ :class => "btn btn-danger", :href => "/master/findings/#{finding.id}/delete", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                                           %i{:class => 'icon-remove icon-white', :title => 'Delete'}
               - else
                 - if @findings.blank? == false
@@ -156,7 +156,7 @@
                           %i{:class => 'icon-pencil icon-white', :title => 'Edit'}
                         %a{ :class => "btn btn-info", :href => "/report/#{@report.id}/findings/#{finding.id}/preview"}
                           %i{:class => 'icon-play-circle icon-white', :title => 'Preview'}
-                        %a{ :class => "btn btn-danger", :href => "/report/#{@report.id}/findings/#{finding.id}/remove"}
+                        %a{ :class => "btn btn-danger", :href => "/report/#{@report.id}/findings/#{finding.id}/remove", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                           %i{:class => 'icon-remove icon-white', :title => 'Delete'}
                         %a{ :class => "btn btn-inverse", :href => "/report/#{@report.id}/findings/#{finding.id}/upload"}
                           %i{:class => 'icon-arrow-up icon-white', :title => 'Add to the findings database'}

@@ -36,7 +36,7 @@
                           %i{:class => 'icon-play-circle', :title => 'Remediation Plan'}
                         %a{:class => 'btn btn-warning', :href => "/report/#{report.id}/presentation"}
                           %i{:class => 'icon-play-circle', :title => 'Presentation'}
-                        %a{ :class => "btn btn-danger", :href => "/report/#{report.id}/remove"}
+                        %a{ :class => "btn btn-danger", :href => "/report/#{report.id}/remove", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                           %i{:class => 'icon-remove icon-white', :title => 'Delete'}
                         %a{ :class => "btn btn-inverse", :href => "/admin/add_user/#{report.id}"}
                           %i{:class => 'icon-user icon-white', :title => 'Add Author'}
@@ -45,7 +45,7 @@
                           %i{:class => 'icon-play-circle', :title => 'Presentation'}
                         %a{:class => 'btn btn-warning', :href => "/report/#{report.id}/findings"}
                           %i{:class => 'icon-pencil icon-white', :title => 'Edit'}
-                        %a{ :class => "btn btn-danger", :href => "/report/#{report.id}/remove"}
+                        %a{ :class => "btn btn-danger", :href => "/report/#{report.id}/remove", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                           %i{:class => 'icon-remove icon-white', :title => 'Delete'}
                         %a{ :class => "btn btn-inverse", :href => "/admin/add_user/#{report.id}"}
                           %i{:class => 'icon-user icon-white', :title => 'Add Author'}

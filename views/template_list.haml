@@ -34,7 +34,7 @@
                 %td{:style => 'width: 60%'}
                   %a{:class => 'btn btn-info', :href => "/admin/templates/#{template.id}/edit"}
                     %i{:class => 'icon-pencil icon-white', :title => 'Edit'}
-                  %a{ :class => "btn btn-danger", :href => "/admin/delete/templates/#{template.id}"}
+                  %a{ :class => "btn btn-danger", :href => "/admin/delete/templates/#{template.id}", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                     %i{:class => 'icon-trash icon-white', :title => 'Delete Template'}
                   %a{:class => 'btn btn-info', :href => "/admin/templates/#{template.id}/download"}
                     %i{:class => 'icon-play-circle icon-white', :title => 'Preview'}

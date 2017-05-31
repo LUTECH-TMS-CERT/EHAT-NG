@@ -14,7 +14,7 @@
                 %td{:style => 'width: 30%'}
                   %a{ :class => "btn btn-info", :href => "/report/#{attachment.report_id}/attachments/#{attachment.id}"}
                     %i{:class => 'icon-play-circle icon-white', :title => 'Preview'}
-                  %a{ :class => "btn btn-danger", :href => "/report/#{attachment.report_id}/attachments/delete/#{attachment.id}"}
+                  %a{ :class => "btn btn-danger", :href => "/report/#{attachment.report_id}/attachments/delete/#{attachment.id}", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                     %i{:class => 'icon-remove icon-white', :title => 'Delete'} 
 
   - else

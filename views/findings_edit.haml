@@ -90,7 +90,7 @@
                       %td
                         #{vuln.msf_ref}
                       %td{ :align => "right"}
-                        %a{ :class => "btn btn-danger btn-sm", :href => "/mapping/#{@finding.id}/vulnmap/#{vuln.id}/delete"}
+                        %a{ :class => "btn btn-danger btn-sm", :href => "/mapping/#{@finding.id}/vulnmap/#{vuln.id}/delete", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                           %i{:class => 'icon-remove icon-white icon-sm', :value => "#{vuln.msf_ref}", :type => "submit", :title => 'Delete'}
         .control-group
           %label{ :class => "control-label", :for => "msf_ref" }
@@ -146,7 +146,7 @@
                       %td
                         #{item.pluginid}
                       %td{ :align => "right"}
-                        %a{ :class => "btn btn-danger btn-xs", :href => "/mapping/#{@finding.id}/nessus/#{item.pluginid}/delete"}
+                        %a{ :class => "btn btn-danger btn-xs", :href => "/mapping/#{@finding.id}/nessus/#{item.pluginid}/delete", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                           %i{:class => 'icon-remove icon-white', :value => "#{item.pluginid}", :type => "submit", :title => 'Delete'}
         .control-group
           %label{ :class => "control-label", :for => "nessus_pluginid" } Add new nessus ID mapping
@@ -165,7 +165,7 @@
                       %td
                         #{item.pluginid}
                       %td{ :align => "right"}
-                        %a{ :class => "btn btn-danger btn-xs", :href => "/mapping/#{@finding.id}/burp/#{item.pluginid}/delete"}
+                        %a{ :class => "btn btn-danger btn-xs", :href => "/mapping/#{@finding.id}/burp/#{item.pluginid}/delete", :onclick => "return confirm('Are you sure you want to delete this item?');"}
                           %i{:class => 'icon-remove icon-white', :value => "#{item.pluginid}", :type => "submit", :title => 'Delete'}
         .control-group
           %label{ :class => "control-label", :for => "burp_pluginid" }
