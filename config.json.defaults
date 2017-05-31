@@ -1,7 +1,7 @@
 {
   "port": "8443",
   "use_ssl": true,
-  "bind_address": "127.0.0.1",
+  "host": "0.0.0.0",
   "ssl_certificate": "./cert.pem",
   "ssl_key": "key.pem",
   "ldap": false,
@@ -40,5 +40,6 @@
   ],
   "threshold": "2",
   "log_file": "./log/serpico.log",
-  "show_exceptions": false
+  "show_exceptions": true,
+  "summary_percent": 25
 }

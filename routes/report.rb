@@ -217,7 +217,7 @@ get '/report/stats_cvss' do
             elsif f["cvss_severity"] == "Medium"
                 @medium += 1
             elsif f["cvss_severity"] == "High"
-                @medium += 1
+                @high += 1
             elsif f["cvss_severity"] == "Critical"
                 @critical += 1
             end
@@ -1555,7 +1555,7 @@ get '/report/:id/remediation' do
                 elsif finding.cvss_severity == "High"
                     high += 1
                 elsif finding.cvss_severity == "Critical"
-                    medium += 1
+                    critical += 1
                 end
 
                 sheet.add_row [finding.id, finding.title, description_clean, finding.affected_hosts, finding.parameter , finding.method, finding.cvss_severity, finding.cvss_score, remediation_clean]

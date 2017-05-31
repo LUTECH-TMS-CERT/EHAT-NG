@@ -1,18 +1,15 @@
 source 'https://rubygems.org'
 
-ruby "2.1.5"
-
 gem 'sinatra'
 gem 'haml'
 gem 'rubyzip', '1.2.1'
-gem 'zip-zip'
-gem 'net-ldap', '~> 0.11'
+gem 'zip-zip', '0.3'
+gem 'net-ldap'
 gem 'json'
 gem 'nokogiri'
-gem 'do_sqlite3', '0.10.17'
-gem 'data_mapper', '1.2.0'
-gem 'dm-sqlite-adapter', '1.2.0'
-gem 'msgpack'
+gem 'do_sqlite3'
+gem 'data_mapper'
+gem 'dm-sqlite-adapter'
 gem 'msfrpc-client'
 gem 'axlsx'
 gem 'ots'

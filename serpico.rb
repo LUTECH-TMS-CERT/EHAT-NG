@@ -1,3 +1,5 @@
+ENV['RACK_ENV'] = 'production'
+
 require "bundler/setup"
 require 'webrick/https'
 require 'openssl'

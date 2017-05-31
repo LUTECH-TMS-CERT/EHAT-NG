@@ -13,9 +13,9 @@ if !userx
 	username = gets.chomp
 	username = "admin" if username == ""
 
-	puts "Generating random password and adding the Administrator with username #{username}..."
-
-	password = rand(36**10).to_s(36)
+	puts "Please enter password (default: random password): "
+	password = gets.chomp
+	password = rand(36**10).to_s(36) if password == ""
 
 	exists = User.first(:username => username)
 
@@ -130,6 +130,6 @@ end
 # Copying the default configurations over
 puts "Copying configuration settings over."
 File.open("./config.json", "w") do |f|
-	f.write File.open("./config.json.defaults", "rb").read
+	f.write File.open("./config.json.defaults", "r").read
 end
 
