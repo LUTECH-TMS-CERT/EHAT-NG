@@ -259,7 +259,7 @@ var CVSS = function (id, options) {
 };
 
 CVSS.prototype.severityRatings = [{
-    name: "None",
+    name: "Informational",
     bottom: 0.0,
     top: 0.0
 }, {
