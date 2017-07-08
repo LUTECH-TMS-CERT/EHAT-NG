@@ -27,6 +27,7 @@ if options[:directory]
 
 	db_filename = "./tmp/master-" + (bdate.strftime("%Y%m%d%H%M%S") +".bak")
 	attachments_filename = "./tmp/Attachments" + "-" + (bdate.strftime("%Y%m%d%H%M%S") +".zip")
+	templates_filename = "./tmp/Templates" + "-" + (bdate.strftime("%Y%m%d%H%M%S") +".zip")
 	global_filename = "./tmp/EHAT-NG_backup_" + (bdate.strftime("%Y%m%d%H%M%S") +".zip")
 
 	FileUtils::copy_file("./db/master.db", db_filename)
@@ -36,11 +37,19 @@ if options[:directory]
 			zipfile.add(name.split("/").last,name)
 		end
 	end
+        
+	Zip::File.open(templates_filename, Zip::File::CREATE) do |zipfile|
+                Dir["./templates/*" ].each do | name|
+                        zipfile.add(name.split("/").last,name)
+                end
+        end
 
 	Zip::File.open(global_filename, Zip::File::CREATE) do |zipfile|
 		zipfile.add(db_filename.split("/").last,db_filename)
 		zipfile.add(attachments_filename.split("/").last,attachments_filename)
+		zipfile.add(templates_filename.split("/").last,templates_filename)
 	end
+
 
 	destination_path = ARGV[0]
 
